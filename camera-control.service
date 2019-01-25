@@ -1,0 +1,13 @@
+[Unit]
+Description=Camera Control
+After=multi-user.target
+
+[Service]
+Type=idle
+WorkingDirectory=/home/pi/cameracontrol
+ExecStart=/usr/bin/gunicorn3 --worker-class eventlet -w 1 web_app:APP --preload --bind="0.0.0.0:8000"
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

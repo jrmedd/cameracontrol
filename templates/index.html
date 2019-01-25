@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Camera Control</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <table id="control-interface">
+        <tr>
+            <td></td>
+            <td><button id="up" data-control="up" data-control-type="move"><i class="far fa-arrow-alt-circle-up fa-2x fa-fw"></i></button></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td><button id="left" data-control="left" data-control-type="move"><i class="far fa-arrow-alt-circle-left fa-2x fa-fw"></i></button></td>
+            <td><button id="down" data-control="down" data-control-type="move"><i class="far fa-arrow-alt-circle-down fa-2x fa-fw"></i></button></td>
+            <td><button id="right" data-control="right" data-control-type="move"><i class="far fa-arrow-alt-circle-right fa-2x fa-fw"></i></button></td>
+        </tr>
+        <tr>
+            <td><button id="zoom-in" data-control="zoom-in"><i class="fas fa-search-minus fa-2x fa-fw"></i></button></td>
+            <td></td>
+            <td><button id="zoom-out" data-control="zoom-out"><i class="fas fa-search-plus fa-2x fa-fw"></i></button></td>
+        </tr>
+    </table>
+    <script src="{{ url_for('static', filename='jquery.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='socket.io.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='all.min.js') }}"></script>
+    <script>
+        var camera = io.connect(location.origin + '/camera');
+        var sessionid;
+        var increaseSpeed;
+
+        camera.on('connect', function () {
+            sessionid = this.id;
+        });
+
+        $("#control-interface button").on('mousedown touchstart', function(e) {
+            let socketMessage = {};
+            socketMessage.command = $(this).attr('data-control');
+            if ($(this).attr('data-control-type') == 'move') {
+                socketMessage.speed = 1;
+                increaseSpeed = setTimeout(function(){socketMessage.speed = 24; camera.emit('control', socketMessage);}, 3000);
+            }
+            camera.emit('control', socketMessage);
+        });
+        $("#control-interface button").on('mouseup touchend', function(e) {
+            camera.emit('control', {'command': 'p-stop'});
+            camera.emit('control', {'command': 'z-stop'});
+            clearTimeout(increaseSpeed);
+        });
+    </script>
+</body>
+</html>
